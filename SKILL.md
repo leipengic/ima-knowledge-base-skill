@@ -12,14 +12,14 @@ license: MIT
 连接腾讯 IMA（https://ima.qq.com）开放知识库接口，实现知识库的**读取**与**写入**操作。
 
 - API Base: `https://ima.qq.com/openapi/wiki/v1`
-- 凭证：环境变量 `IMA_CLIENT_ID` / `IMA_API_KEY`，或文件 `~/.config/ima/client_id` 与 `~/.config/ima/api_key`
+- 凭证：环境变量 `IMA_CLIENT_ID` / `IMA_API_KEY`（兼容 `IMA_OPENAPI_CLIENTID` / `IMA_OPENAPI_APIKEY`），或文件 `~/.config/ima/client_id` 与 `~/.config/ima/api_key`
 - 完整接口字段见 `references/api.md`
 
 ## 使用前提
 
 1. 用户需已在 https://ima.qq.com/agent-interface 开通并获取 Client ID 与 API Key。
 2. 凭证配置方式（二选一）：
-   - 环境变量：`IMA_CLIENT_ID`、`IMA_API_KEY`
+   - 环境变量：`IMA_CLIENT_ID`、`IMA_API_KEY`（兼容 `IMA_OPENAPI_CLIENTID` / `IMA_OPENAPI_APIKEY`）
    - 文件：`%USERPROFILE%\.config\ima\client_id`、`%USERPROFILE%\.config\ima\api_key`（内容为纯文本，无换行）
 3. 若凭证缺失，脚本会返回提示，Agent 须如实告知用户配置凭证，不得编造或猜测。
 

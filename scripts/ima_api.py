@@ -20,7 +20,7 @@ ima_api.py — IMA OpenAPI 统一调用客户端（知识库模块 openapi/wiki/
 凭证优先级（从高到低）：
 1. 环境变量 IMA_CLIENT_ID / IMA_API_KEY
 2. 环境变量 IMA_OPENAPI_CLIENTID / IMA_OPENAPI_APIKEY
-3. 文件 ~/.config/ima/client_id 与 ~/.config/ima/api_key（Windows: %USERPROFILE%\.config\ima\）
+3. 文件 ~/.config/ima/client_id 与 ~/.config/ima/api_key（Windows: %USERPROFILE%\\.config\\ima\\）
 """
 
 import json
@@ -55,7 +55,7 @@ def _read_file_safe(path: Path) -> str:
         return ""
 
 
-def load_credentials():
+def load_credentials() -> tuple[str, str]:
     """按优先级加载凭证（client_id / api_key）。"""
     client_id = (
         os.environ.get("IMA_CLIENT_ID")
@@ -81,11 +81,11 @@ def post_json(api_path: str, body: dict, client_id: str = None, api_key: str = N
     if client_id is None or api_key is None:
         client_id, api_key = load_credentials()
 
-    # 校验目标路径，只允许 ima.qq.com 官方域名
+    # SSRF 防护：仅允许 HTTPS 协议与 ima.qq.com 官方域名
     url = f"{BASE_URL}/{api_path.lstrip('/')}"
-    host = urllib.parse.urlsplit(url).hostname if hasattr(urllib, "parse") else None
-    if host not in ALLOWED_HOSTS:
-        raise ImaError(-100, f"不允许访问非 IMA 官方域名: {host}")
+    parsed = urllib.parse.urlsplit(url)
+    if parsed.scheme != "https" or parsed.hostname not in ALLOWED_HOSTS:
+        raise ImaError(-100, f"不允许访问非 IMA 官方地址: {parsed.hostname or url}")
 
     payload = json.dumps(body, ensure_ascii=False).encode("utf-8")
     request = urllib.request.Request(
@@ -113,7 +113,7 @@ def post_json(api_path: str, body: dict, client_id: str = None, api_key: str = N
         raise ImaError(-100, f"响应不是合法 JSON: {raw[:500]}")
 
 
-def main(argv):
+def main(argv: list[str]) -> int:
     if len(argv) < 2:
         print("用法: python ima_api.py <api_path> '<json_body>'", file=sys.stderr)
         return 1

@@ -70,7 +70,7 @@ SUPPORTED_TYPES = {
 MB = 1024 * 1024
 
 
-def detect_type(file_path: Path) -> tuple:
+def detect_type(file_path: Path) -> tuple[int, str, int]:
     """返回 (media_type, content_type, max_size)。不支持的类型抛 ImaError。"""
     ext = file_path.suffix.lower()
     if ext not in SUPPORTED_TYPES:
@@ -86,7 +86,15 @@ def sha1_hex(data: bytes) -> str:
     return hashlib.sha1(data).hexdigest()
 
 
-def build_cos_authorization(secret_id, secret_key, method, pathname, headers, start_time, expired_time):
+def build_cos_authorization(
+    secret_id: str,
+    secret_key: str,
+    method: str,
+    pathname: str,
+    headers: dict[str, str],
+    start_time: str,
+    expired_time: str,
+) -> str:
     """构造腾讯云 COS 签名（参考官方文档 https://cloud.tencent.com/document/product/436/7778）。"""
     key_time = f"{start_time};{expired_time}"
     sign_key = hmac_sha1(secret_key.encode("utf-8"), key_time.encode("utf-8")).hex()
@@ -104,7 +112,7 @@ def build_cos_authorization(secret_id, secret_key, method, pathname, headers, st
     )
 
 
-def upload_to_cos(file_path: Path, credential: dict, content_type: str, timeout_ms: int = 300000):
+def upload_to_cos(file_path: Path, credential: dict, content_type: str, timeout_ms: int = 300000) -> None:
     """将文件上传到腾讯云 COS（PUT Object）。credential 为 create_media 返回的 cos_credential。"""
     file_content = file_path.read_bytes()
     bucket = credential["bucket_name"]
